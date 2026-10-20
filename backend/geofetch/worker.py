@@ -20,13 +20,17 @@ ADAPTERS = {
 
 def run(dataset: str, request: dict):
     from .progress import report
-    if dataset not in ADAPTERS and dataset != 'events':
+    if dataset not in ADAPTERS and dataset not in {'events', 'medical'}:
         raise ValueError('不支持的数据类型')
     report('准备数据', force=True)
     output = Path(request['output']) / dataset
     output.mkdir(parents=True, exist_ok=True)
     cache = CACHE / dataset
     cache.mkdir(parents=True, exist_ok=True)
+    if dataset == 'medical':
+        from .providers.medical.medical import collect
+        collect(request['area'], output, cache, CACHE)
+        return
     if dataset == 'events':
         from .providers.events.client import CemsClient
         from .providers.events.downloader import CemsPdfDownloader

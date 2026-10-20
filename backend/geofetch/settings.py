@@ -19,6 +19,7 @@ CATALOG = [
     dict(id='dem', name='数字高程', english='ELEVATION', description='Copernicus GLO-30 · 30m 地形栅格', format='GeoTIFF', mode='online', area=True, size='按 1° 瓦片下载'),
     dict(id='population', name='人口分布', english='POPULATION', description='WorldPop · 2026 中国 100m 人口栅格', format='GeoTIFF', mode='online', area=True, size='首次约 900 MB'),
     dict(id='roads', name='道路与铁路', english='TRANSPORT', description='OpenStreetMap · 道路分类与名称', format='GeoJSON', mode='online', area=True, size='全国 PBF 约 1.6 GB'),
+    dict(id='medical', name='医疗设施 POI', english='HEALTHCARE', description='OpenStreetMap · 医院、诊所与其他医疗设施', format='GeoJSON', mode='online', area=True, size='复用 OSM 缓存或按范围查询'),
     dict(id='hydro', name='河流与水体', english='HYDROGRAPHY', description='OpenStreetMap · 河流、湖泊与水库', format='GeoJSON', mode='online', area=True, size='全国 PBF 约 1.6 GB'),
     dict(id='landcover', name='土地覆盖', english='LAND COVER', description='中国南方 · 2020 年 1.5m 分类栅格', format='GeoTIFF', mode='local', area=True, size='需要本地分卷 ZIP'),
     dict(id='euluc', name='城市用地', english='URBAN LAND', description='EULUC · 2018 年城市用地类型', format='GeoJSON', mode='local', area=True, size='需要本地城市 ZIP'),

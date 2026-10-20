@@ -84,9 +84,9 @@ def test_supervisor_exposes_progress_before_process_exit(tmp_path, monkeypatch):
     log=(tmp_path/'runtime'/job['id']/'log.txt').read_text(encoding='utf-8')
     assert '[裁剪] 37.5%' in log and progress.PREFIX not in log
 
-def test_only_seven_public_datasets_remain():
+def test_public_dataset_catalog_matches_providers():
     from geofetch.settings import CATALOG
     from geofetch.worker import ADAPTERS
-    expected={'dem','population','roads','hydro','landcover','euluc','events'}
+    expected={'dem','population','roads','hydro','landcover','euluc','events','medical'}
     assert {item['id'] for item in CATALOG}==expected
-    assert set(ADAPTERS)==expected-{'events'}
+    assert set(ADAPTERS)==expected-{'events','medical'}

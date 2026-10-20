@@ -9,6 +9,7 @@
 | 数字高程 | [Copernicus DEM GLO-30](https://documentation.dataspace.copernicus.eu/Data/Others/CCM.html)，约 30m DSM | GeoTIFF |
 | 人口分布 | [WorldPop](https://hub.worldpop.org/)，R2025A，中国 2026 年 100m 人口数栅格 | GeoTIFF |
 | 道路与铁路 | [OpenStreetMap](https://www.openstreetmap.org/)，中国区域数据 | GeoJSON |
+| 医疗设施 POI | OpenStreetMap，医院、诊所、药房等 | GeoJSON |
 | 河流与水体 | OpenStreetMap，中国区域数据 | GeoJSON |
 | 土地覆盖 | 自定义数据源 | GeoTIFF、QGIS 样式 |
 | 城市用地 | 自定义数据源 | GeoJSON |
@@ -59,7 +60,7 @@ data/                  # 默认成果目录
 
 感谢数据贡献者和研究团队。本工具不拥有上游数据版权，也不代表数据提供方的官方支持。使用或发布成果时，应遵守对应数据的许可并保留来源署名。
 
-- **OpenStreetMap**：采用 [ODbL 1.0](https://www.openstreetmap.org/copyright)。道路、铁路和水系成果须署名 `© OpenStreetMap contributors`；公开衍生数据库时遵守适用的共享要求。
+- **OpenStreetMap**：采用 [ODbL 1.0](https://www.openstreetmap.org/copyright)。道路、铁路、水系及医疗 POI 成果须署名 `© OpenStreetMap contributors`；公开衍生数据库时遵守适用的共享要求。
 - **Copernicus DEM**：遵循 [GLO-30 专用许可](https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/DEM/resources/license/License-COPDEM-30.pdf)，按第 6 条保留 DLR、Airbus、欧盟和 ESA 等来源声明及免责声明。
 - **WorldPop**：按[官方声明](https://hub.worldpop.org/)的 **CC BY 4.0** 要求署名，注明数据版本、原始引用及裁剪等修改。
 - **自定义数据源**：土地覆盖和城市用地的版权及使用范围由数据提供者决定，使用和分发时遵守对应数据包的许可。

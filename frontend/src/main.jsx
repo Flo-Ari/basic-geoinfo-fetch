@@ -6,6 +6,8 @@ import './style.css';
 const statuses = {queued:'等待开始', running:'正在运行', completed:'已完成', failed:'任务失败', cancelled:'已取消', cancelling:'正在停止', interrupted:'运行中断'};
 const activeStatuses = ['queued', 'running', 'cancelling'];
 const needsSettings = ['landcover', 'euluc', 'events'];
+const outputStorageKey = 'basic-geoinfo-fetch.output-directory';
+const savedOutput = () => {try {return localStorage.getItem(outputStorageKey) || ''} catch {return ''}};
 
 async function api(path, options = {}) {
   const response = await fetch('/api' + path, options);
@@ -71,18 +73,22 @@ function Dialog({children, onClose}) {
 function App() {
   const [config, setConfig] = useState(null), [error, setError] = useState(''), [tab, setTab] = useState('collect');
   const [selected, setSelected] = useState(['dem']), [area, setArea] = useState(''), [areaName, setAreaName] = useState('');
-  const [output, setOutput] = useState(''), [landcover, setLandcover] = useState(''), [euluc, setEuluc] = useState(''), [member, setMember] = useState('按城市划分.zip/按城市划分/重庆市.shp');
+  const [output, setOutput] = useState(savedOutput), [landcover, setLandcover] = useState(''), [euluc, setEuluc] = useState(''), [member, setMember] = useState('按城市划分.zip/按城市划分/重庆市.shp');
   const [eventLimit, setEventLimit] = useState(3), [eventCodes, setEventCodes] = useState('');
   const [jobs, setJobs] = useState([]), [job, setJob] = useState(null), [files, setFiles] = useState([]), [busy, setBusy] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false), [picking, setPicking] = useState('');
-  const uploadRef = useRef(null), consoleRef = useRef(null);
+  const uploadRef = useRef(null), consoleRef = useRef(null), outputEdited = useRef(false);
+  const updateOutput = value => {outputEdited.current = true; setOutput(value)};
+  useEffect(() => {
+    try {localStorage.setItem(outputStorageKey, output)} catch {}
+  }, [output]);
   const catalog = config?.catalog || [];
   const label = id => catalog.find(item => item.id === id)?.name || id;
   const safe = async action => {setError(''); try {await action()} catch (exception) {setError(exception.message)}};
   const refresh = () => api('/jobs').then(setJobs).catch(exception => setError(exception.message));
 
   useEffect(() => {
-    api('/config').then(value => {setConfig(value); setOutput(value.paths.output); setLandcover(value.paths.sources + '/landcover'); setEuluc(value.paths.sources + '/euluc')}).catch(exception => setError(exception.message));
+    api('/config').then(value => {setConfig(value); setOutput(current => outputEdited.current ? current : current || value.paths.output); setLandcover(value.paths.sources + '/landcover'); setEuluc(value.paths.sources + '/euluc')}).catch(exception => setError(exception.message));
     refresh();
   }, []);
   useEffect(() => {
@@ -122,9 +128,10 @@ function App() {
     setBusy('');
   };
   const start = async () => {
+    if (picking || !output.trim()) return;
     setBusy('start');
     await safe(async () => {
-      const value = await post('/jobs', {datasets:selected, area, output, landcover_source:landcover, euluc_source:euluc, euluc_member:member, event_limit:Number(eventLimit), event_codes:eventCodes.split(/[,，\s]+/).filter(Boolean)});
+      const value = await post('/jobs', {datasets:selected, area, output:output.trim(), landcover_source:landcover, euluc_source:euluc, euluc_member:member, event_limit:Number(eventLimit), event_codes:eventCodes.split(/[,，\s]+/).filter(Boolean)});
       setJob(value); setFiles([]); refresh();
     });
     setBusy('');
@@ -154,10 +161,10 @@ function App() {
             <div className="form-field"><label htmlFor="existing-area">目标范围<span className="field-meta">{needsArea ? '必填' : '可选'}</span></label><div className="area-field"><select id="existing-area" value={area} title={areaName || area} onChange={event => {setArea(event.target.value); setAreaName(event.target.value ? event.target.selectedOptions[0].text : '')}}><option value="">选择范围文件</option>{config?.boundaries.map(boundary => <option key={boundary.path} value={boundary.path}>{boundary.name}</option>)}</select><button type="button" className="secondary-button upload-button" onClick={() => uploadRef.current.click()} disabled={busy === 'upload'}>{busy === 'upload' ? <Loader2 size={22} className="spin"/> : <Upload size={22}/>}上传</button></div>
               <input hidden ref={uploadRef} type="file" accept=".geojson" aria-label="上传范围文件" onChange={event => {upload(event.target.files[0]); event.target.value = ''}}/>
             </div>
-            <div className="form-field"><label htmlFor="output-directory">保存位置</label>{dirField(output, setOutput, 'output-directory', '结果保存目录')}</div>
+            <div className="form-field"><label htmlFor="output-directory">保存位置</label>{dirField(output, updateOutput, 'output-directory', '结果保存目录')}</div>
             {selected.some(id => needsSettings.includes(id)) && <button type="button" className="settings-button" onClick={() => setSettingsOpen(true)}><FolderOpen size={23}/>数据源设置<Settings2 size={22}/></button>}
           </div>
-          <div className="collect-actions"><button type="button" className="primary-button start-button" onClick={start} disabled={!config || !selected.length || (needsArea && !area) || busy === 'start' || running}>{busy === 'start' ? <Loader2 size={24} className="spin"/> : <Play size={23} fill="currentColor"/>}{running ? '任务进行中' : '开始采集'}</button></div>
+          <div className="collect-actions"><button type="button" className="primary-button start-button" onClick={start} disabled={!config || !selected.length || !output.trim() || !!picking || (needsArea && !area) || busy === 'start' || running}>{busy === 'start' ? <Loader2 size={24} className="spin"/> : <Play size={23} fill="currentColor"/>}{running ? '任务进行中' : '开始采集'}</button></div>
         </section>
 
         <div className="activity-column"><section className="panel log-panel" aria-labelledby="log-title"><header className="panel-heading"><h2 id="log-title"><Terminal size={25}/>运行日志</h2><span className={'job-badge ' + (job?.status || '')}>{job ? statuses[job.status] : '等待任务'}</span>{running && <button type="button" className="stop-button" onClick={cancel} disabled={job.status === 'cancelling'}><Square size={17}/>停止</button>}</header>

@@ -37,7 +37,7 @@ async def local_origin(request, call_next):
     return await call_next(request)
 
 class TaskRequest(BaseModel):
-    datasets: list[str] = Field(min_length=1, max_length=7)
+    datasets: list[str] = Field(min_length=1, max_length=8)
     area: str = ''
     output: str = 'data'
     landcover_source: str = ''
@@ -137,7 +137,9 @@ def create_job(body: TaskRequest):
     if any(not re.fullmatch(r'EMSR\d+', code.upper()) for code in body.event_codes):
         raise HTTPException(400, '事件编号格式应为 EMSR927')
     request['event_codes'] = [s.upper() for s in body.event_codes]
-    output = local_path(body.output or 'data')
+    if not body.output.strip():
+        raise HTTPException(400, '请选择结果保存目录')
+    output = local_path(body.output.strip())
     # Keep generated products out of source code and caches.
     protected = [ROOT / x for x in ('backend','frontend','cache','sources','.runtime','.git','scripts','tests','docs')]
     if output == ROOT or any(output == path or path in output.parents for path in protected):

@@ -64,3 +64,10 @@ def test_sources_and_event_codes_checked_before_launch(client, tmp_path):
     area = upload(client).json()['path']
     assert client.post('/api/jobs', json={'datasets':['landcover'],'area':area,'landcover_source':str(tmp_path/'missing')}).status_code == 400
     assert client.post('/api/jobs', json={'datasets':['events'],'event_codes':['bad-code']}).status_code == 400
+
+
+def test_explicit_empty_output_does_not_fall_back_to_data(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(api.manager, 'create', lambda _: pytest.fail('不应启动任务'))
+    response = client.post('/api/jobs', json={'datasets':['events'], 'output':'   '})
+    assert response.status_code == 400
+    assert '保存目录' in response.json()['detail']
